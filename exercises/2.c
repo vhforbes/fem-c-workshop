@@ -8,7 +8,7 @@
 // cc -o app2 2.c && ./app2
 
 int main() {
-    char header[] = "HTTP/1.1 200 OK";
+    char *header = "HTTP/1.1 200 OK";
 
     // 👉 Try replacing this `15` with a call to `strlen` (and `#include <string.h>` above!)
     write(1, header, 15);
@@ -18,12 +18,11 @@ int main() {
     // a zero byte in the string. Before you run the program, what do you think it will print?
 
     // 👉 Try changing this `%s` to `%zud` (ignore the compiler warning).
-    // Then the run the program multiple times. Does the number change?
     printf("\n\nThat output was from write(). This is from printf: %s\n", header);
 
-    // 👉 Try replacing the printf call's last argument (originally `header`)
-    // with this argument instead: `(char*)123456`
-    // Then try it with the number 0 instead of 123456. Try some other numbers there!
+    // 👉 Try changing the `%zud` back to `%s` and then replace the printf call's
+    // last argument (originally `header`) with this argument instead: `(char*)123456`
+    // 👉 Then try it with the number 0 instead of 123456.
 
     return 0;
 }

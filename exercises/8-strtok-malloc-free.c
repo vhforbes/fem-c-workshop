@@ -113,13 +113,8 @@ int main() {
         }
 
         // Read all the bytes from the socket into the buffer
-        ssize_t bytes_read = read(new_socket, buffer, BUFFER_SIZE);
-
-        if (bytes_read < BUFFER_SIZE) {
-            // Read from the first space to the second_space
-        } else {
-            // TODO handle request too big. For a static webserver, requests should be super small!
-        }
+        memset(buffer, 0, BUFFER_SIZE);
+        ssize_t valread = read(new_socket, buffer, BUFFER_SIZE);
 
         // Parse the URL and method out of the HTTP request
         char *method, *url;
