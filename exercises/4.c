@@ -133,13 +133,6 @@ int main() {
         return -1;
     }
 
-    int opt = 1;
-
-    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-        perror("Failed to set socket options.");
-        return -1;
-    }
-
     struct sockaddr_in address;
 
     address.sin_family = AF_INET;
