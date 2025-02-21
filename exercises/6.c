@@ -28,14 +28,27 @@ int respond_error(int socket_fd, int fd, const char *message) {
     return write(socket_fd, response, strlen(response)) != -1;
 }
 
+int respond_400(int socket_fd) {
+    return respond_error(socket_fd, -1, "400 Bad Request");
+}
+
+int respond_500(int socket_fd, int fd) {
+    return respond_error(socket_fd, fd, "500 Internal Server Error");
+}
+
 int open_file_from_request(char *request, int socket_fd) {
     char *start = strchr(request, ' ') + 1;
-    char *end = strchr(start, ' ');
 
     // OPTIONS requests (and requests via proxies) may not start with '/'
     // For now, we don't support these requests. (We could always add support, though!)
-    if (end == NULL || start == NULL || *start != '/') {
-        return respond_error(socket_fd, -1, "400 Bad Request");
+    if (start == NULL || *start != '/') {
+        return respond_400(socket_fd);
+    }
+
+    char *end = strchr(start, ' ');
+
+    if (end == NULL) {
+        return respond_400(socket_fd);
     }
 
     char *path = start + 1; // Skip over the `/` so the file path becomes relative.

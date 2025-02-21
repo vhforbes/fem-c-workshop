@@ -28,6 +28,10 @@ int respond_error(int socket_fd, int fd, const char *message) {
     return write(socket_fd, response, strlen(response)) != -1;
 }
 
+int respond_500(int socket_fd, int fd) {
+    return respond_error(socket_fd, fd, "500 Internal Server Error");
+}
+
 int open_file_from_request(char *request, int socket_fd) {
     char *start = strchr(request, ' ') + 1;
     char *end = strchr(start, ' ');
