@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -25,41 +26,45 @@ int respond_error(int socket_fd, int fd, const char *message) {
     char response[256]; // These error responses are small, e.g. "500 Internal Server Error"
     snprintf(response, sizeof(response), "HTTP/1.1 %s\r\n\r\n", message);
 
-    return write(socket_fd, response, strlen(response)) != -1;
+    write(socket_fd, response, strlen(response));
+
+    return -1;
+}
+
+int respond_400(int socket_fd) {
+    return respond_error(socket_fd, -1, "400 Bad Request");
 }
 
 int respond_500(int socket_fd, int fd) {
     return respond_error(socket_fd, fd, "500 Internal Server Error");
 }
 
-int open_file_from_request(char *request, int socket_fd) {
-    char *start = strchr(request, ' ') + 1;
-    char *end = strchr(start, ' ');
+int handle_req(char *request, int socket_fd) {
+    strtok(request, " "); // Skip over the HTTP method (e.g. "GET ")
+    char *target = strtok(NULL, " ");
 
     // OPTIONS requests (and requests via proxies) may not start with '/'
     // For now, we don't support these requests. (We could always add support, though!)
-    if (end == NULL || start == NULL || *start != '/') {
+    if (target == NULL || target[0] != '/') {
         return respond_error(socket_fd, -1, "400 Bad Request");
     }
 
-    char *path = start + 1; // Skip over the `/` so the file path becomes relative.
+    // We could optimize away this strlen call by calling strchr instead of strtok,
+    // and recording the start and end positions.
+    size_t target_len = strlen(target);
 
-    // Null-terminate the path by writing a zero into the request string.
-    if (end[-1] == '/') {
-        // If the path ends with a slash, default to index.html as the filename.
+    // If the path ends with a slash, default to index.html as the filename.
+    if (target[target_len - 1] == '/') {
         // There will always be enough space here when receiving a request
         // from a normal browser, because after the target there will be " HTTP/1.1"
         // followed by a newline and at least one header. To be robust to requests
         // from other clients, we could accept the length of the request and only
         // do this if we have confirmed there's enough room.
-        memcpy(end, "index.html\0", 11);
-    } else {
-        // The path didn't end with a slash, so use it as a relative local path.
-        // Replace the ' ' we know is here (from strchr) with a zero.
-        *end = '\0';
+        memcpy(target + target_len, "index.html\0", 11);
     }
 
-    int fd = open(path, O_RDONLY);
+    // Use target + 1 to skip over the leading `/` so the file path becomes relative.
+    int fd = open(target + 1, O_RDONLY);
 
     if (fd == -1) {
         if (errno == ENOENT) {
@@ -68,12 +73,6 @@ int open_file_from_request(char *request, int socket_fd) {
             return respond_500(socket_fd, fd);
         }
     }
-
-    return fd;
-}
-
-int handle_req(char *request, int socket_fd) {
-    int fd = open_file_from_request(request, socket_fd);
 
     struct stat stats;
 
@@ -134,6 +133,13 @@ int main() {
 
     if (socket_fd == 0) {
         perror("Failed to open socket.");
+        return -1;
+    }
+
+    // Prevent "Address in use" errors when restarting the server
+    int opt = 1;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt");
         return -1;
     }
 
