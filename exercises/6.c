@@ -36,32 +36,38 @@ int respond_500(int socket_fd, int fd) {
     return respond_error(socket_fd, fd, "500 Internal Server Error");
 }
 
-char *path_from_req(char *request) {
-    char *start = strchr(request, ' ');
+const char* INDEX_HTML = "index.html";
 
-    if (start == NULL) {
-        return NULL;
+char *to_path(char *req) {
+    char *start = req;
+
+    while (start[0] != ' ') {
+        start++;
+
+        if (start[0] == 0) {
+            return NULL;
+        }
     }
 
     start++;
 
-    char *current = start;
+    char *end = start;
     char *last_slash = NULL;
     char *last_dot = NULL;
 
-    while(current[0] != ' ') {
-        switch (current[0]) {
+    while(end[0] != ' ') {
+        switch (end[0]) {
             case '/':
-                last_slash = current;
+                last_slash = end;
                 break;
             case '.':
-                last_dot = current;
+                last_dot = end;
                 break;
             case '\0':
                 return NULL;
         }
 
-        current++;
+        end++;
     }
 
     // OPTIONS requests (and requests via proxies) may not start with '/'
@@ -70,8 +76,6 @@ char *path_from_req(char *request) {
         return NULL;
     }
 
-    char *end = current;
-
     // If the path ends with a slash, default to index.html as the filename.
     if (last_dot == NULL || last_slash > last_dot) {
         // There will always be enough space here when receiving a request
@@ -79,7 +83,7 @@ char *path_from_req(char *request) {
         // followed by a newline and at least one header. To be robust to requests
         // from other clients, we could accept the length of the request and only
         // do this if we have confirmed there's enough room.
-        memcpy(last_slash + 1, "index.html\0", 11);
+        memcpy(last_slash + 1, INDEX_HTML, strlen(INDEX_HTML) + 1);
     } else {
         end[0] = '\0';
     }
@@ -89,7 +93,7 @@ char *path_from_req(char *request) {
 }
 
 int handle_req(char *request, int socket_fd) {
-    char *path = path_from_req(request);
+    char *path = to_path(request);
 
     if (path == NULL) {
         return respond_error(socket_fd, -1, "400 Bad Request");

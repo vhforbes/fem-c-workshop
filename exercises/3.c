@@ -1,32 +1,64 @@
 #include <string.h>
-#include <unistd.h>
+#include <stdio.h>
 
 // To build and attempt to run the program: (it will give an error at first!)
 //
 // cc -o app3 3.c && ./app3
 
-int handle_req(char *request) {
-    // 👉 Handle errors by returning -1 if either `strchr` call returns NULL.
-    char *start = strchr(request, ' ') + 1;
-    char *end = strchr(start, ' ');
+const char* DEFAULT_FILE = "index.html";
 
-    write(1, "Target: ", 8);
-    write(1, start, end - start);
+char *to_path(char *req) {
+    char *start, *end;
 
-    // 👉 Try changing `main` to print something if `handle_req` returned an error.
-    return 0;
+    // Advance `start` to the first space
+    for (start = req; start[0] != ' '; start++) {
+        if (!start[0]) {
+            return NULL;
+        }
+    }
+
+    start++; // Skip over the space
+
+    // Advance `end` to the second space
+    for (end = start; end[0] != ' '; end++) {
+        if (!end[0]) {
+            return NULL;
+        }
+    }
+
+    // Ensure there's a '/' right before where we're about to copy in "index.html"
+    if (end[-1] == '/') {
+        end--;
+    } else {
+        end[0] = '/';
+    }
+
+    // Copy in "index.html", overwriting whatever was there in the request string.
+    memcpy(end + 1, DEFAULT_FILE, strlen(DEFAULT_FILE) + 1);
+
+    return start;
 }
 
 int main() {
-    // 👉 First, fix this "`handle_req` was called before it was declared" error.
-    //
-    // There are two ways you can do it:
-    // * Forward-declare `handle_req` by copying its first line up to the `{`,
-    //   pasting it above `int main`, and adding `;` on the end.
-    // * Moving the entire `handle_req` function above `main`'s declaration,
-    //   so that `handle_req` is only called after it has already been declared.
+    // 👉 This doesn't currently trim off the leading '/' - modify to_path to fix this!
+    char req1[] = "GET /blog HTTP/1.1\nHost: example.com";
+    printf("Should be \"blog/index.html\": \"%s\"\n", to_path(req1));
 
-    // 👉 Try calling this with a string that will fail parsing, like a string with
-    // no spaces in it, or an empty string. What happens if there's no error handling?
-    return handle_req("GET /blog HTTP/1.1 ...");
+    char req2[] = "GET /blog/ HTTP/1.1\nHost: example.com";
+    printf("Should be \"blog/index.html\": \"%s\"\n", to_path(req2));
+
+    // 👉 Make sure this case works (when the request is for "/", return "index.html")
+    char req3[] = "GET / HTTP/1.1\nHost: example.com";
+    printf("Should be \"index.html\": \"%s\"\n", to_path(req3));
+
+    // 👉 Before fixing this next one, try moving it up to the beginning of main().
+    //    What happens?
+
+    // 👉 Next, fix it by handling the case where `req` is too short to
+    //    have "index.html" memcpy'd into it.
+    //    Hint: to_path() will need to take a second argument!
+    char req4[] = "GET /blog ";
+    printf("Should be \"(null)\": \"%s\"\n", to_path(req4));
+
+    return 0;
 }
