@@ -57,6 +57,7 @@ void print_file(const char *path) {
 
     if (fstat(fd, &metadata) == -1) {
         printf("Error getting file stats\n");
+        close(fd);
         return;
     }
 
@@ -64,6 +65,7 @@ void print_file(const char *path) {
 
     if (buf == NULL) {
         printf("Memory allocation failed\n");
+        close(fd);
         free(buf);
         return;
     }
@@ -71,11 +73,14 @@ void print_file(const char *path) {
     ssize_t bytes_read = read(fd, buf, metadata.st_size);
     if (bytes_read == -1) {
         printf("Error reading file\n");
+        close(fd);
+        free(buf);
         return;
     }
 
     buf[bytes_read] = '\0';
     printf("\n%s contents:\n\n%s\n", path, buf);
+
     close(fd);
     free(buf);
 }

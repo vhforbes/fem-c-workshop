@@ -4,6 +4,12 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+// 👉 First, build and run the program.
+//
+// To do this, make sure you're in the `exercises` directory, and then run:
+//
+// cc -o app4 4.c && ./app4
+
 const char* DEFAULT_FILE = "index.html";
 
 char *to_path(char *req, size_t req_len) {
@@ -61,7 +67,7 @@ void print_file(const char *path) {
     close(fd);
 
     // 👉 Go back and add error handling for all the cases above where errors could happen.
-    //    (You cn just printf that an error happened.) Some relevant docs:
+    //    (You can just printf that an error happened.) Some relevant docs:
     //
     //    https://www.man7.org/linux/man-pages/man2/open.2.html
     //    https://www.man7.org/linux/man-pages/man2/stat.2.html
