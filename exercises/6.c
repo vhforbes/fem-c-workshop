@@ -112,6 +112,8 @@ int handle_req(char *request, int socket_fd) {
 
     struct stat stats;
 
+    printf("Size of stat is %lu\n", sizeof stats.st_size);
+
     // Populate the `stats` struct with the file's metadata
     // If it fails (even though the file was open), respond with a 500 error.
     if (fstat(fd, &stats) == -1) {

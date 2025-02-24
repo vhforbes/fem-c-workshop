@@ -1,12 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 
-// 👉 First, build and run the program.
-//
-// To do this, make sure you're in the `exercises` directory, and then run:
-//
-// cc -o app3 3.c && ./app3
-
 const char* DEFAULT_FILE = "index.html";
 
 char *to_path(char *req, size_t req_len) {
@@ -21,28 +15,49 @@ char *to_path(char *req, size_t req_len) {
 
     start++; // Skip over the space
 
+    char *last_slash = NULL;
+    char *last_dot = NULL;
+
     // Advance `end` to the second space
     for (end = start; end[0] != ' '; end++) {
-        if (!end[0]) {
-            return NULL;
+        switch (end[0]) {
+            case '/':
+                last_slash = end;
+                break;
+            case '.':
+                last_dot = end;
+                break;
+            case '\0':
+                return NULL;
         }
     }
 
-    // Ensure there's a '/' right before where we're about to copy in "index.html"
-    if (end[-1] != '/') {
-        end[0] = '/';
-        end++;
-    }
-
-    // If there isn't enough room to copy in "index.html" then return NULL.
-    // (This only happens if the request has no headers, which should only
-    // come up in practice if the request is malformed or something.)
-    if (end + strlen(DEFAULT_FILE) > req + req_len) {
+    // OPTIONS requests (and requests via proxies) may not start with '/'
+    // For now, we don't support these requests. (We could always add support, though!)
+    if (last_slash == NULL) {
         return NULL;
     }
 
-    // Copy in "index.html", overwriting whatever was there in the request string.
-    memcpy(end, DEFAULT_FILE, strlen(DEFAULT_FILE) + 1);
+    // If the path ends with a slash, default to index.html as the filename.
+    if (last_dot == NULL || last_slash > last_dot) {
+        last_slash++;
+
+        // If there isn't enough room to copy in "index.html" then return NULL.
+        // (This only happens if the request has no headers, which should only
+        // come up in practice if the request is malformed or something.)
+        if (last_slash + strlen(DEFAULT_FILE) > req + req_len) {
+            return NULL;
+        }
+
+        // There will always be enough space here when receiving a request
+        // from a normal browser, because after the target there will be " HTTP/1.1"
+        // followed by a newline and at least one header. To be robust to requests
+        // from other clients, we could accept the length of the request and only
+        // do this if we have confirmed there's enough room.
+        memcpy(last_slash, DEFAULT_FILE, strlen(DEFAULT_FILE) + 1);
+    } else {
+        end[0] = '\0';
+    }
 
     return start + 1; // Skip the leading '/' (e.g. in "/blog/index.html")
 }

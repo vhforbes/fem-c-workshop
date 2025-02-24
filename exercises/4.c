@@ -1,11 +1,8 @@
 #include <string.h>
 #include <stdio.h>
-
-// 👉 First, build and run the program.
-//
-// To do this, make sure you're in the `exercises` directory, and then run:
-//
-// cc -o app3 3.c && ./app3
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 const char* DEFAULT_FILE = "index.html";
 
@@ -47,27 +44,38 @@ char *to_path(char *req, size_t req_len) {
     return start + 1; // Skip the leading '/' (e.g. in "/blog/index.html")
 }
 
+void print_file(const char *path) {
+    int fd = open(path, O_RDONLY);
+    struct stat metadata;
+    fstat(fd, &metadata);
+
+    // 👉 Change this to `char *` and malloc(). (malloc comes from <stdlib.h>)
+    //    Hint 1: Don't forget to handle the case where malloc returns NULL!
+    //    Hint 2: Don't forget to `free(buf)` later, to prevent memory leaks.
+    char buf[metadata.st_size + 1];
+
+    ssize_t bytes_read = read(fd, buf, metadata.st_size);
+    buf[bytes_read] = '\0';
+    printf("\n%s contents:\n\n%s\n", path, buf);
+
+    close(fd);
+
+    // 👉 Go back and add error handling for all the cases above where errors could happen.
+    //    (You cn just printf that an error happened.) Some relevant docs:
+    //
+    //    https://www.man7.org/linux/man-pages/man2/open.2.html
+    //    https://www.man7.org/linux/man-pages/man2/stat.2.html
+    //    https://www.man7.org/linux/man-pages/man2/read.2.html
+    //    https://www.man7.org/linux/man-pages/man3/malloc.3.html
+}
+
 int main() {
-    char req1[] = "GET /blog HTTP/1.1\nHost: example.com";
-    printf("Should be \"blog/index.html\": \"%s\"\n", to_path(req1, strlen(req1)));
+    char req1[] = "GET / HTTP/1.1\nHost: example.com";
+    print_file(to_path(req1, strlen(req1)));
 
-    char req2[] = "GET /blog/ HTTP/1.1\nHost: example.com";
-    printf("Should be \"blog/index.html\": \"%s\"\n", to_path(req2, strlen(req2)));
+    char req2[] = "GET /blog HTTP/1.1\nHost: example.com";
+    print_file(to_path(req2, strlen(req2)));
 
-    char req3[] = "GET / HTTP/1.1\nHost: example.com";
-    printf("Should be \"index.html\": \"%s\"\n", to_path(req3, strlen(req3)));
-
-    char req4[] = "GET /blog ";
-    printf("Should be \"(null)\": \"%s\"\n", to_path(req4, strlen(req4)));
-
-    char req5[] = "GET /image.png HTTP/1.1\nHost: example.com";
-    printf("Should be \"image.png\": \"%s\"\n", to_path(req5, strlen(req5)));
-
-    char req6[] = "GET /static/image.png HTTP/1.1\nHost: example.com";
-    printf("Should be \"static/image.png\": \"%s\"\n", to_path(req6, strlen(req6)));
-
-    char req7[] = "GET /static/images/image.png HTTP/1.1\nHost: example.com";
-    printf("Should be \"static/images/image.png\": \"%s\"\n", to_path(req7, strlen(req7)));
 
     return 0;
 }
