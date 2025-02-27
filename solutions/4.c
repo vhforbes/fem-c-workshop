@@ -7,7 +7,7 @@
 
 const char* DEFAULT_FILE = "index.html";
 
-char *to_path(char *req, size_t req_len) {
+char *to_path(char *req) {
     char *start, *end;
 
     // Advance `start` to the first space
@@ -35,7 +35,7 @@ char *to_path(char *req, size_t req_len) {
     // If there isn't enough room to copy in "index.html" then return NULL.
     // (This only happens if the request has no headers, which should only
     // come up in practice if the request is malformed or something.)
-    if (end + strlen(DEFAULT_FILE) > req + req_len) {
+    if (end + strlen(DEFAULT_FILE) > req + strlen(req)) {
         return NULL;
     }
 
@@ -87,10 +87,10 @@ void print_file(const char *path) {
 
 int main() {
     char req1[] = "GET / HTTP/1.1\nHost: example.com";
-    print_file(to_path(req1, strlen(req1)));
+    print_file(to_path(req1));
 
     char req2[] = "GET /blog HTTP/1.1\nHost: example.com";
-    print_file(to_path(req2, strlen(req2)));
+    print_file(to_path(req2));
 
 
     return 0;

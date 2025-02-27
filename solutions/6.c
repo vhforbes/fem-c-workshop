@@ -22,6 +22,8 @@
 #define PORT 8080
 #define MAX_REQUEST_BYTES 32768
 
+const char *OK_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n";
+
 int respond_error(int socket_fd, int fd, const char *message) {
     if (fd != -1) {
         close(fd);
@@ -39,7 +41,7 @@ int respond_500(int socket_fd, int fd) {
     return respond_error(socket_fd, fd, "500 Internal Server Error");
 }
 
-const char* DEFAULT_FILE = "index.html";
+const char* INDEX_HTML = "index.html";
 
 char *to_path(char *req) {
     char *start = req;
@@ -86,15 +88,12 @@ char *to_path(char *req) {
         if (end > last_slash + 1) {
             end++;
         }
-
-        // If there isn't enough room to copy in "index.html" then return NULL.
-        // (This only happens if the request has no headers, which should only
-        // come up in practice if the request is malformed or something.)
-        if (end + strlen(DEFAULT_FILE) > req + strlen(req)) {
-            return NULL;
-        }
-
-        memcpy(end, DEFAULT_FILE, strlen(DEFAULT_FILE) + 1);
+        // There will always be enough space here when receiving a request
+        // from a normal browser, because after the target there will be " HTTP/1.1"
+        // followed by a newline and at least one header. To be robust to requests
+        // from other clients, we could accept the length of the request and only
+        // do this if we have confirmed there's enough room.
+        memcpy(end, INDEX_HTML, strlen(INDEX_HTML) + 1);
     } else {
         end[0] = '\0';
     }
@@ -103,9 +102,14 @@ char *to_path(char *req) {
     return start + 1;
 }
 
+struct response_header {
+    char *string;
+    size_t length;
+};
+
 // Macro to define a 4-char constant integer
-#define FOURCHAR(a, b, c, d) \
-    ((uint32_t)a | ((uint32_t)b << 8) | ((uint32_t)c << 16) | ((uint32_t)d << 24))
+#define FOURCHAR(a, b, c, d) (((uint32_t)(a)) | (((uint32_t)(b)) << 8) | \
+ (((uint32_t)(c)) << 16) | (((uint32_t)(d)) << 24))
 
 // Define constants for HTML and JPEG tags
 const int HTML = FOURCHAR('h', 't', 'm', 'l');
@@ -196,13 +200,14 @@ int handle_req(char *request, int socket_fd) {
             }
         }
 
+        struct response_header resp;
         char resp_str[1024]; // Our responses are short, e.g. "200 OK\n\nContent-Type: text/css"
         size_t resp_length = write_response_header(ext, resp_str);
         ssize_t bytes_to_write = resp_length;
         ssize_t bytes_written = 0;
 
         while (bytes_to_write) {
-            bytes_written = write(socket_fd, resp_str + bytes_written, bytes_to_write);
+            bytes_written = write(socket_fd, resp_str + bytes_written, resp_length);
 
             if (bytes_written == -1) {
                 // If sending the 200 didn't succeed, the odds of 500 succeeding aren't great!
@@ -276,7 +281,7 @@ int main() {
 
     printf("Listening on port %d\n", PORT);
 
-    char req[MAX_REQUEST_BYTES + 1]; // + 1 for null terminator
+    char req[MAX_REQUEST_BYTES] = {0};
     int addrlen = sizeof(address);
 
     // Loop forever to keep processing new connections
@@ -289,8 +294,6 @@ int main() {
             ssize_t bytes_read = read(req_socket_fd, req, MAX_REQUEST_BYTES);
 
             if (bytes_read < MAX_REQUEST_BYTES) {
-                req[bytes_read] = '\0'; // Null-terminate
-
                 // Parse the URL and method out of the HTTP request
                 handle_req(req, req_socket_fd);
             } else {
