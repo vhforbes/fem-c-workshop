@@ -1,3 +1,5 @@
+# C Fundamentals Workshop
+
 Welcome!
 
 There are [slides for this workshop](https://docs.google.com/presentation/d/1CGtDVSazrJHI52OnwwJXgogQEHs63lrasfQWJvmcYM0/edit?usp=sharing) which reference the exercises in this repo.
