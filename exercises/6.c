@@ -13,6 +13,10 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#ifdef __linux__
+#include <sys/sendfile.h>
+#endif
+
 // 👉 First, build and run the program.
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
