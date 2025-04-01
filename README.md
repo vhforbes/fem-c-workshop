@@ -1,6 +1,8 @@
-# Setup Instructions
-
 Welcome!
+
+There are [slides for this workshop](https://docs.google.com/presentation/d/1CGtDVSazrJHI52OnwwJXgogQEHs63lrasfQWJvmcYM0/edit?usp=sharing) which reference the exercises in this repo.
+
+# Setup Instructions
 
 For this workshop, you'll need to be running one of these operating systems:
 * macOS
@@ -9,7 +11,7 @@ For this workshop, you'll need to be running one of these operating systems:
 
 Any of these operating systems should have everything you need already installed.
 
-To verify this, run the following command in a terminal:
+To verify this, clone this repository, then run the following terminal command in the root directory where you checked out the repo:
 
 ```
 gcc -o verify verify.c && ./verify

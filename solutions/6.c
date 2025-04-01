@@ -17,7 +17,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// gcc -o app5 5.c && ./app5
+// gcc -o app6 6.c && ./app6
 
 #define PORT 8080
 #define MAX_REQUEST_BYTES 32768
