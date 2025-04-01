@@ -17,7 +17,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app5 5.c && ./app5
+// gcc -o app5 5.c && ./app5
 
 const int PORT = 8080;
 const int MAX_REQUEST_BYTES = 32768;

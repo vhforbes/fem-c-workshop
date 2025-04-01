@@ -5,7 +5,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app3 3.c && ./app3
+// gcc -o app3 3.c && ./app3
 
 const char* DEFAULT_FILE = "index.html";
 

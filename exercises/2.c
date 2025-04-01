@@ -5,7 +5,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app2 2.c && ./app2
+// gcc -o app2 2.c && ./app2
 
 int main() {
     char *header = "HTTP/1.1 200 OK";

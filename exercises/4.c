@@ -8,7 +8,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app4 4.c && ./app4
+// gcc -o app4 4.c && ./app4
 
 const char* DEFAULT_FILE = "index.html";
 

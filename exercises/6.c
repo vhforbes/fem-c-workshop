@@ -17,7 +17,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app5 5.c && ./app5
+// gcc -o app6 6.c && ./app6
 
 #define PORT 8080
 #define MAX_REQUEST_BYTES 32768
@@ -104,8 +104,7 @@ char *to_path(char *req) {
 }
 
 // Macro to define a 4-char constant integer
-#define FOURCHAR(a, b, c, d) \
-    ((uint32_t)a | ((uint32_t)b << 8) | ((uint32_t)c << 16) | ((uint32_t)d << 24))
+#define FOURCHAR(a, b, c, d) a | (b << 8) | (c << 16) | (d << 24)
 
 // Define constants for HTML and JPEG tags
 const int HTML = FOURCHAR('h', 't', 'm', 'l');

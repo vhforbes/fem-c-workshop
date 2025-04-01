@@ -5,7 +5,7 @@
 //
 // To do this, make sure you're in the `exercises` directory, and then run:
 //
-// cc -o app1 1.c && ./app1
+// gcc -o app1 1.c && ./app1
 
 int main() {
     // 👉 Try changing this string to "Hello, World!\n" - and also
