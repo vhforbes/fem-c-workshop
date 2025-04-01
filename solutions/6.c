@@ -13,16 +13,12 @@
 #include <stdbool.h>
 #include <errno.h>
 
-// 👉 First, build and run the program.
-//
-// To do this, make sure you're in the `exercises` directory, and then run:
-//
-// gcc -o app6 6.c && ./app6
+#ifdef __linux__
+#include <sys/sendfile.h>
+#endif
 
 #define PORT 8080
 #define MAX_REQUEST_BYTES 32768
-
-const char *OK_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n";
 
 int respond_error(int socket_fd, int fd, const char *message) {
     if (fd != -1) {
@@ -41,7 +37,7 @@ int respond_500(int socket_fd, int fd) {
     return respond_error(socket_fd, fd, "500 Internal Server Error");
 }
 
-const char* INDEX_HTML = "index.html";
+const char* DEFAULT_FILE = "index.html";
 
 char *to_path(char *req) {
     char *start = req;
@@ -88,12 +84,15 @@ char *to_path(char *req) {
         if (end > last_slash + 1) {
             end++;
         }
-        // There will always be enough space here when receiving a request
-        // from a normal browser, because after the target there will be " HTTP/1.1"
-        // followed by a newline and at least one header. To be robust to requests
-        // from other clients, we could accept the length of the request and only
-        // do this if we have confirmed there's enough room.
-        memcpy(end, INDEX_HTML, strlen(INDEX_HTML) + 1);
+
+        // If there isn't enough room to copy in "index.html" then return NULL.
+        // (This only happens if the request has no headers, which should only
+        // come up in practice if the request is malformed or something.)
+        if (end + strlen(DEFAULT_FILE) > req + strlen(req)) {
+            return NULL;
+        }
+
+        memcpy(end, DEFAULT_FILE, strlen(DEFAULT_FILE) + 1);
     } else {
         end[0] = '\0';
     }
@@ -102,25 +101,19 @@ char *to_path(char *req) {
     return start + 1;
 }
 
-struct response_header {
-    char *string;
-    size_t length;
-};
-
 // Macro to define a 4-char constant integer
-#define FOURCHAR(a, b, c, d) (((uint32_t)(a)) | (((uint32_t)(b)) << 8) | \
- (((uint32_t)(c)) << 16) | (((uint32_t)(d)) << 24))
+#define FOURCHAR(a, b, c, d) a | (b << 8) | (c << 16) | (d << 24)
 
 // Define constants for HTML and JPEG tags
-const int HTML = FOURCHAR('h', 't', 'm', 'l');
-const int WASM = FOURCHAR('w', 'a', 's', 'm');
-const int WEBP = FOURCHAR('w', 'e', 'b', 'p');
-const int JPEG = FOURCHAR('j', 'p', 'e', 'g');
-const int JPG = FOURCHAR('j', 'p', 'g', 0);
-const int CSS = FOURCHAR('c', 's', 's', 0);
-const int PNG = FOURCHAR('p', 'n', 'g', 0);
-const int GIF = FOURCHAR('g', 'i', 'f', 0);
-const int JS = FOURCHAR('j', 's', 0, 0);
+#define HTML FOURCHAR('h', 't', 'm', 'l')
+#define WASM FOURCHAR('w', 'a', 's', 'm')
+#define WEBP FOURCHAR('w', 'e', 'b', 'p')
+#define JPEG FOURCHAR('j', 'p', 'e', 'g')
+#define JPG FOURCHAR('j', 'p', 'g', 0)
+#define CSS FOURCHAR('c', 's', 's', 0)
+#define PNG FOURCHAR('p', 'n', 'g', 0)
+#define GIF FOURCHAR('g', 'i', 'f', 0)
+#define JS FOURCHAR('j', 's', 0, 0)
 
 size_t write_response_header(char ext[4], char *resp_str) {
     char *content_type;
@@ -200,14 +193,13 @@ int handle_req(char *request, int socket_fd) {
             }
         }
 
-        struct response_header resp;
         char resp_str[1024]; // Our responses are short, e.g. "200 OK\n\nContent-Type: text/css"
         size_t resp_length = write_response_header(ext, resp_str);
         ssize_t bytes_to_write = resp_length;
         ssize_t bytes_written = 0;
 
         while (bytes_to_write) {
-            bytes_written = write(socket_fd, resp_str + bytes_written, resp_length);
+            bytes_written = write(socket_fd, resp_str + bytes_written, bytes_to_write);
 
             if (bytes_written == -1) {
                 // If sending the 200 didn't succeed, the odds of 500 succeeding aren't great!
@@ -223,7 +215,6 @@ int handle_req(char *request, int socket_fd) {
         ssize_t bytes_to_send = stats.st_size;
 
         while (bytes_to_send > 0) {
-            // 👉 `sendfile` works differently on different operating systems!
             #ifdef __linux__
                 ssize_t bytes_sent = sendfile(socket_fd, fd, NULL, stats.st_size);
                 bool send_failed = bytes_sent == -1;
@@ -281,7 +272,7 @@ int main() {
 
     printf("Listening on port %d\n", PORT);
 
-    char req[MAX_REQUEST_BYTES] = {0};
+    char req[MAX_REQUEST_BYTES + 1]; // + 1 for null terminator
     int addrlen = sizeof(address);
 
     // Loop forever to keep processing new connections
@@ -294,6 +285,8 @@ int main() {
             ssize_t bytes_read = read(req_socket_fd, req, MAX_REQUEST_BYTES);
 
             if (bytes_read < MAX_REQUEST_BYTES) {
+                req[bytes_read] = '\0'; // Null-terminate
+
                 // Parse the URL and method out of the HTTP request
                 handle_req(req, req_socket_fd);
             } else {
