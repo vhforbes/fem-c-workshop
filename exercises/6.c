@@ -107,15 +107,15 @@ char *to_path(char *req) {
 #define FOURCHAR(a, b, c, d) a | (b << 8) | (c << 16) | (d << 24)
 
 // Define constants for HTML and JPEG tags
-const int HTML = FOURCHAR('h', 't', 'm', 'l');
-const int WASM = FOURCHAR('w', 'a', 's', 'm');
-const int WEBP = FOURCHAR('w', 'e', 'b', 'p');
-const int JPEG = FOURCHAR('j', 'p', 'e', 'g');
-const int JPG = FOURCHAR('j', 'p', 'g', 0);
-const int CSS = FOURCHAR('c', 's', 's', 0);
-const int PNG = FOURCHAR('p', 'n', 'g', 0);
-const int GIF = FOURCHAR('g', 'i', 'f', 0);
-const int JS = FOURCHAR('j', 's', 0, 0);
+#define HTML FOURCHAR('h', 't', 'm', 'l')
+#define WASM FOURCHAR('w', 'a', 's', 'm')
+#define WEBP FOURCHAR('w', 'e', 'b', 'p')
+#define JPEG FOURCHAR('j', 'p', 'e', 'g')
+#define JPG FOURCHAR('j', 'p', 'g', 0)
+#define CSS FOURCHAR('c', 's', 's', 0)
+#define PNG FOURCHAR('p', 'n', 'g', 0)
+#define GIF FOURCHAR('g', 'i', 'f', 0)
+#define JS FOURCHAR('j', 's', 0, 0)
 
 size_t write_response_header(char ext[4], char *resp_str) {
     char *content_type;
