@@ -12,7 +12,7 @@ int main() {
     //    changing the length to 14.
     // 👉 Try making the length less than 14. What happens when you run the program?
     // 👉 Try making the length much longer than 14, like 200. What happens? 😱
-    write(1, "Hello, World!\n", 14);
+    write(1, "Hello, World!", 13);
 
     // 👉 Try uncommenting the next 2 lines, as well as the #include <stdio.h> at the top.
     //    (You'll want to change the length of write() above back to 14 first!)
