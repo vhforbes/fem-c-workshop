@@ -17,12 +17,6 @@
 #include <sys/sendfile.h>
 #endif
 
-// 👉 First, build and run the program.
-//
-// To do this, make sure you're in the `exercises` directory, and then run:
-//
-// gcc -o app6 6.c && ./app6
-
 #define PORT 8080
 #define MAX_REQUEST_BYTES 32768
 
@@ -221,22 +215,12 @@ int handle_req(char *request, int socket_fd) {
         ssize_t bytes_to_send = stats.st_size;
 
         while (bytes_to_send > 0) {
-            // 👉 `sendfile` works differently on different operating systems!
-            //
-            // Try implementing it for both operating systems (even though you can
-            // only easily test it on the one you're currently running).
             #ifdef __linux__
-                // 👉 Replace these hardcoded integers by calling the Linux sendfile().
-                //    Its docs are here:
-                //    https://www.man7.org/linux/man-pages/man2/sendfile.2.html#RETURN_VALUE
-                ssize_t bytes_sent = 0;
-                bool send_failed = 1;
+                ssize_t bytes_sent = sendfile(socket_fd, fd, NULL, stats.st_size);
+                bool send_failed = bytes_sent == -1;
             #elif defined(__APPLE__)
-                // 👉 Replace these hardcoded integers by calling the macOS sendfile().
-                //    Its docs are here:
-                //    https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/sendfile.2.html
-                off_t bytes_sent = 0;
-                bool send_failed = 1;
+                off_t bytes_sent = stats.st_size;
+                bool send_failed = sendfile(fd, socket_fd, 0, &bytes_sent, NULL, 0) == -1;
             #else
                 #error "Unsupported operating system"
             #endif

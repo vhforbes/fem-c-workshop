@@ -1,6 +1,10 @@
-# Setup Instructions
+# C Fundamentals Workshop
 
 Welcome!
+
+There are [slides for this workshop](https://docs.google.com/presentation/d/1CGtDVSazrJHI52OnwwJXgogQEHs63lrasfQWJvmcYM0/edit?usp=sharing) which reference the exercises in this repo.
+
+# Setup Instructions
 
 For this workshop, you'll need to be running one of these operating systems:
 * macOS
@@ -9,10 +13,10 @@ For this workshop, you'll need to be running one of these operating systems:
 
 Any of these operating systems should have everything you need already installed.
 
-To verify this, run the following command in a terminal:
+To verify this, clone this repository, then run the following terminal command in the root directory where you checked out the repo:
 
 ```
-cc -o verify verify.c && ./verify
+gcc -o verify verify.c && ./verify
 ```
 
 It should print "You're all set!"
@@ -22,7 +26,11 @@ It should print "You're all set!"
 If running that command didn't print "You're all set!", you'll need to install either
 [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/) -
 either will work fine, so choose whichever you think will be
-easier to install. If installing one of those two does not provide
-the above `cc` command, then whenever you see instructions to
-run `cc` in this workshop, you can replace the `cc` command
-with either `gcc` or `clang` (depending on which you installed).
+easier to install.
+
+These exercises all say to run `gcc`, but you can subsitute `clang` for `gcc` and
+it should always work in the case of these examples; `clang` and `gcc` accept
+almost identical CLI flags.
+
+Fun fact: macOS actually ships with `clang` but aliases it to `gcc`, so if you run
+`gcc --version` on macOS, it prints out `Apple clang version ___`.

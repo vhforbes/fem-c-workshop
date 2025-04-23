@@ -3,12 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-
-// 👉 First, build and run the program.
-//
-// To do this, make sure you're in the `exercises` directory, and then run:
-//
-// gcc -o app4 4.c && ./app4
+#include <stdlib.h>
 
 const char* DEFAULT_FILE = "index.html";
 
@@ -52,27 +47,42 @@ char *to_path(char *req) {
 
 void print_file(const char *path) {
     int fd = open(path, O_RDONLY);
-    struct stat metadata;
-    fstat(fd, &metadata);
 
-    // 👉 Change this to `char *` and malloc(). (malloc comes from <stdlib.h>)
-    //    Hint 1: Don't forget to handle the case where malloc returns NULL!
-    //    Hint 2: Don't forget to `free(buf)` later, to prevent memory leaks.
-    char buf[metadata.st_size + 1];
+    if (fd == -1) {
+        printf("Error opening file %s\n", path);
+        return;
+    }
+
+    struct stat metadata;
+
+    if (fstat(fd, &metadata) == -1) {
+        printf("Error getting file stats\n");
+        close(fd);
+        return;
+    }
+
+    char *buf = malloc(metadata.st_size + 1);
+
+    if (buf == NULL) {
+        printf("Memory allocation failed\n");
+        close(fd);
+        free(buf);
+        return;
+    }
 
     ssize_t bytes_read = read(fd, buf, metadata.st_size);
+    if (bytes_read == -1) {
+        printf("Error reading file\n");
+        close(fd);
+        free(buf);
+        return;
+    }
+
     buf[bytes_read] = '\0';
     printf("\n%s contents:\n\n%s\n", path, buf);
 
     close(fd);
-
-    // 👉 Go back and add error handling for all the cases above where errors could happen.
-    //    (You can just printf that an error happened.) Some relevant docs:
-    //
-    //    https://www.man7.org/linux/man-pages/man2/open.2.html
-    //    https://www.man7.org/linux/man-pages/man2/stat.2.html
-    //    https://www.man7.org/linux/man-pages/man2/read.2.html
-    //    https://www.man7.org/linux/man-pages/man3/malloc.3.html
+    free(buf);
 }
 
 int main() {
