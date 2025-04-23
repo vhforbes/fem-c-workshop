@@ -17,7 +17,7 @@ int main() {
     // inside the definition of `header`, e.g.  "HTT\0P/1.1 200 OK" - this inserts
     // a zero byte in the string. Before you run the program, what do you think it will print?
 
-    // 👉 Try changing this `%s` to `%zud` (ignore the compiler warning).
+    // 👉 Try changing this `%s` to `%zu` (ignore the compiler warning).
     // Then the run the program multiple times. Does the number change?
     printf("\n\nThat output was from write(). This is from printf: %s\n", header);
 
