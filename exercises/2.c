@@ -18,8 +18,6 @@ int main() {
     // a zero byte in the string. Before you run the program, what do you think it will print?
 
     // 👉 Try changing this `%s` to `%zu` (ignore the compiler warning).
-    // Then the run the program multiple times. Does the number change?
-
     printf("\n\nThat output was from write(). This is from printf: %s\n", header);
 
     // 👉 Try changing the `%zud` back to `%s` and then replace the printf call's
