@@ -1,8 +1,10 @@
-# C Fundamentals Workshop
+## C Fundamentals Course
+This is a companion repository for the [C Fundamentals](https://frontendmasters.com/courses/c-fundamentals/) course on Frontend Masters.
+[![Frontend Masters](https://static.frontendmasters.com/assets/brand/logos/full.png)](https://frontendmasters.com/courses/c-fundamentals/)
 
 Welcome!
 
-There are [slides for this workshop](https://docs.google.com/presentation/d/1CGtDVSazrJHI52OnwwJXgogQEHs63lrasfQWJvmcYM0/edit?usp=sharing) which reference the exercises in this repo.
+There are [slides for this workshop](https://static.frontendmasters.com/assets/courses/2025-06-09-c-fundamentals/c-fundamentals-slides.pdf) which reference the exercises in this repo.
 
 # Setup Instructions
 
