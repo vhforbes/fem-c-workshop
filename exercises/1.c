@@ -1,4 +1,4 @@
-// #include <stdio.h>
+#include <stdio.h>
 #include <unistd.h>
 
 // 👉 First, build and run the program.
@@ -12,13 +12,14 @@ int main() {
     //    changing the length to 14.
     // 👉 Try making the length less than 14. What happens when you run the program?
     // 👉 Try making the length much longer than 14, like 200. What happens? 😱
-    write(1, "Hello, World!", 13);
+    write(1, "Hello, World!\n", 13);
 
     // 👉 Try uncommenting the next 2 lines, as well as the #include <stdio.h> at the top.
     //    (You'll want to change the length of write() above back to 14 first!)
     // 👉 Try adding a second number, named num2. Set it to something other than 42.
-    // int num = 42;
-    // printf("The number is: %d\n", num);
+    int num = 42;
+    int num1 = 22;
+    printf("The number is: %d\n %d\n", num, num1);
 
     // 👉 Try having printf print *both* numbers.
     //    Hint: you'll need to make 2 changes to printf's arguments to do this!
