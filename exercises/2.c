@@ -25,5 +25,10 @@ int main() {
     // last argument (originally `header`) with this argument instead: `(char*)123456`
     // 👉 Then try it with the number 0 instead of 123456.
 
+    char *p = NULL;
+    printf("Pointer value: %p\n", (void*)p);
+    printf("Attempting to print with %%s: %s\n", p);
+
+
     return 0;
 }

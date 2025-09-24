@@ -7,6 +7,8 @@
 //
 // gcc -o app3 3.c && ./app3
 
+// GET /blog HTTP/1.1\nHost: example.com
+
 const char* DEFAULT_FILE = "index.html";
 
 char *to_path(char *req) {
@@ -14,12 +16,16 @@ char *to_path(char *req) {
 
     // Advance `start` to the first space
     for (start = req; start[0] != ' '; start++) {
-        if (!start[0]) {
+        //-> start[0] != " " OR start[0] != '\0'
+        if (!start[0]) { 
             return NULL;
         }
     }
 
-    start++; // Skip over the space
+
+    start+=2; // Skip over the space
+    // start++; // Skip over the / ??
+
 
     // Advance `end` to the second space
     for (end = start; end[0] != ' '; end++) {
@@ -29,16 +35,19 @@ char *to_path(char *req) {
     }
 
     // Ensure there's a '/' right before where we're about to copy in "index.html"
-    if (end[-1] == '/') {
-        end--; // We end in a slash, e.g. "/blog/" - so just move `end` to that slash.
-    } else {
-        end[0] = '/'; // We don't end in a slash, so write one.
+    if (end[-1] != '/') {
+        end[0] = '/';
+        end++;
     }
+    
 
     // Copy in "index.html", overwriting whatever was there in the request string.
+    if((size_t)end + strlen(DEFAULT_FILE) + 1 > (size_t)req + strlen(req)) {
+        return NULL;
+    }
+
     memcpy(
-        // 👉 Try refactoring out this + 1 by modifying the `if/else` above.
-        end + 1,
+        end,
         DEFAULT_FILE,
         // 👉 Try removing the +1 here. Re-run to see what happens, but first try to guess!
         strlen(DEFAULT_FILE) + 1
